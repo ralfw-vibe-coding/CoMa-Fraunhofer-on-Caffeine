@@ -33,6 +33,7 @@ export function createRankingQuery() {
     createFilter([
       eventTypes.participantRegistered,
       eventTypes.participantDeregistered,
+      eventTypes.coffeeDrawn,
       eventTypes.coffeeSupplyDepleted,
       eventTypes.coffeePurchased,
     ]),

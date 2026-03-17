@@ -30,6 +30,7 @@ function buildParticipantState(events: EventRecord[]) {
   const participants = new Map<string, ParticipantState>();
   let lastSupplyDepletedSequenceNumber = 0;
   let lastCoffeePurchasedSequenceNumber = 0;
+  let cupsDrawnSinceSupplyDepleted = 0;
 
   for (const event of events) {
     switch (event.eventType) {
@@ -66,11 +67,20 @@ function buildParticipantState(events: EventRecord[]) {
 
       case eventTypes.coffeeSupplyDepleted: {
         lastSupplyDepletedSequenceNumber = event.sequenceNumber;
+        cupsDrawnSinceSupplyDepleted = 0;
         break;
       }
 
       case eventTypes.coffeePurchased: {
         lastCoffeePurchasedSequenceNumber = event.sequenceNumber;
+        cupsDrawnSinceSupplyDepleted = 0;
+        break;
+      }
+
+      case eventTypes.coffeeDrawn: {
+        if (lastSupplyDepletedSequenceNumber > lastCoffeePurchasedSequenceNumber) {
+          cupsDrawnSinceSupplyDepleted += 1;
+        }
         break;
       }
     }
@@ -80,6 +90,7 @@ function buildParticipantState(events: EventRecord[]) {
     participants,
     lastSupplyDepletedSequenceNumber,
     lastCoffeePurchasedSequenceNumber,
+    cupsDrawnSinceSupplyDepleted,
   };
 }
 
@@ -125,6 +136,7 @@ export function projectRanking(
     participants,
     lastSupplyDepletedSequenceNumber,
     lastCoffeePurchasedSequenceNumber,
+    cupsDrawnSinceSupplyDepleted,
   } = buildParticipantState(events);
 
   const activeParticipantNames = Array.from(participants.values())
@@ -137,6 +149,8 @@ export function projectRanking(
     return {
       ranking,
       urgency: "low",
+      isSupplyDepleted: false,
+      cupsDrawnSinceSupplyDepleted: 0,
     };
   }
 
@@ -144,11 +158,15 @@ export function projectRanking(
     return {
       ranking,
       urgency: "high",
+      isSupplyDepleted: true,
+      cupsDrawnSinceSupplyDepleted,
     };
   }
 
   return {
     ranking,
     urgency: "low",
+    isSupplyDepleted: false,
+    cupsDrawnSinceSupplyDepleted: 0,
   };
 }

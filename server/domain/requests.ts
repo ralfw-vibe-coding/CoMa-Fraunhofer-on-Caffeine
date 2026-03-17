@@ -37,4 +37,6 @@ export type RankingUrgency = "low" | "medium" | "high";
 export type ListWhoIsNextToBuyCoffeeQueryResult = {
   ranking: string[];
   urgency: RankingUrgency;
+  isSupplyDepleted: boolean;
+  cupsDrawnSinceSupplyDepleted: number;
 };

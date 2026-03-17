@@ -1,4 +1,5 @@
 import { type CSSProperties, useEffect, useState } from "react";
+import horrorvacuiImage from "@/assets/horrorvacui.png";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,8 @@ type ParticipantListItem = {
 type RankingResult = {
   ranking: string[];
   urgency: "low" | "medium" | "high";
+  isSupplyDepleted: boolean;
+  cupsDrawnSinceSupplyDepleted: number;
 };
 
 type CommandResponse = {
@@ -35,18 +38,17 @@ export default function App() {
   const [nextToBuyCoffee, setNextToBuyCoffee] = useState<RankingResult>({
     ranking: [],
     urgency: "low",
+    isSupplyDepleted: false,
+    cupsDrawnSinceSupplyDepleted: 0,
   });
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [purchaseAmount, setPurchaseAmount] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showCoffeeSteamOverlay, setShowCoffeeSteamOverlay] = useState(false);
+  const [showSupplyDepletedOverlay, setShowSupplyDepletedOverlay] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const selectedParticipant = participants.find(
-    (participant) => participant.participantRegisteredId === selectedParticipantId,
-  );
 
   const canReportCoffeeDrawn = selectedParticipantId !== null;
   const canReportCoffeePurchased =
@@ -67,6 +69,34 @@ export default function App() {
       window.clearTimeout(timeoutId);
     };
   }, [showConfetti]);
+
+  useEffect(() => {
+    if (!showCoffeeSteamOverlay) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowCoffeeSteamOverlay(false);
+    }, 1400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [showCoffeeSteamOverlay]);
+
+  useEffect(() => {
+    if (!showSupplyDepletedOverlay) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSupplyDepletedOverlay(false);
+    }, 1500);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [showSupplyDepletedOverlay]);
 
   useEffect(() => {
     void refreshData();
@@ -114,7 +144,6 @@ export default function App() {
       currentId === participantRegisteredId ? null : participantRegisteredId,
     );
     setPurchaseAmount("");
-    setStatusMessage(null);
     setErrorMessage(null);
   }
 
@@ -135,8 +164,6 @@ export default function App() {
     if (!response.ok || !result.status) {
       throw new Error(result.message || "Die Aktion konnte nicht gespeichert werden.");
     }
-
-    setStatusMessage(result.message);
   }
 
   async function handleCoffeeDrawn() {
@@ -152,6 +179,7 @@ export default function App() {
         participantRegisteredId: selectedParticipantId,
       });
       await refreshData();
+      setShowCoffeeSteamOverlay(true);
       resetSelection();
     } catch (error) {
       setErrorMessage(
@@ -198,6 +226,7 @@ export default function App() {
     try {
       await postCommand("/coffee/supply-depleted", {});
       await refreshData();
+      setShowSupplyDepletedOverlay(true);
       resetSelection();
     } catch (error) {
       setErrorMessage(
@@ -233,76 +262,100 @@ export default function App() {
         </div>
       ) : null}
 
+      {showCoffeeSteamOverlay ? (
+        <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center px-6">
+          <div
+            aria-hidden="true"
+            className="steam-overlay flex flex-col items-center gap-3 rounded-[2rem] border border-[#ffe4cf]/35 bg-[#2a1712]/80 px-8 py-7 backdrop-blur-sm"
+          >
+            <div className="steam-cup">
+              <span className="steam-line steam-line-one" />
+              <span className="steam-line steam-line-two" />
+              <span className="steam-line steam-line-three" />
+              <span className="steam-cup-rim" />
+              <span className="steam-cup-body" />
+              <span className="steam-cup-handle" />
+              <span className="steam-cup-saucer" />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {showSupplyDepletedOverlay ? (
+        <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center px-6">
+          <div
+            aria-hidden="true"
+            className="panic-overlay flex items-center justify-center rounded-[2rem] border border-[#ffd4cf]/35 bg-[#2a1712]/82 px-8 py-7 backdrop-blur-sm"
+          >
+            <img
+              alt=""
+              src={horrorvacuiImage}
+              className="panic-image h-28 w-28 rounded-[1.4rem] object-cover"
+            />
+          </div>
+        </div>
+      ) : null}
+
       <div className="mx-auto flex max-w-sm justify-center">
         <Card className="w-full max-w-[22rem] rounded-[2rem] px-4 py-5">
           <section className="space-y-6">
             <header className="space-y-3 text-center">
               <h1 className="text-[2rem] font-black tracking-tight">CoMa</h1>
-              <p className="text-sm text-[#c9b4aa]">
-                {isLoading
-                  ? "Daten werden geladen."
-                  : selectedParticipant
-                    ? `${selectedParticipant.displayName} ist ausgewählt.`
-                    : participants.length > 0
-                      ? "Wähle zuerst Deinen Namen aus."
-                      : "Registriere zuerst Teilnehmer über die REST-API."}
-              </p>
-              {statusMessage ? (
-                <p className="text-sm text-[#8ef0cf]">{statusMessage}</p>
-              ) : null}
               {errorMessage ? (
                 <p className="text-sm text-[#ff9f9b]">{errorMessage}</p>
               ) : null}
             </header>
 
-            <section className="grid grid-cols-2 gap-x-5 gap-y-4 px-2">
-              {participants.map((participant) => {
-                const isSelected =
-                  participant.participantRegisteredId === selectedParticipantId;
+            <section className="space-y-2">
+              <div className="grid grid-cols-2 gap-x-5 gap-y-3 px-2">
+                {participants.map((participant) => {
+                  const isSelected =
+                    participant.participantRegisteredId === selectedParticipantId;
 
-                return (
-                  <Button
-                    key={participant.participantRegisteredId}
-                    variant={isSelected ? "secondary" : "default"}
-                    size="tile"
-                    disabled={isLoading || isSubmitting}
-                    onClick={() =>
-                      handleParticipantClick(participant.participantRegisteredId)
-                    }
-                  >
-                    {participant.displayName}
-                  </Button>
-                );
-              })}
+                  return (
+                    <Button
+                      key={participant.participantRegisteredId}
+                      variant={isSelected ? "secondary" : "default"}
+                      size="tile"
+                      disabled={isLoading || isSubmitting}
+                      onClick={() =>
+                        handleParticipantClick(participant.participantRegisteredId)
+                      }
+                    >
+                      {participant.displayName}
+                    </Button>
+                  );
+                })}
 
-              <div className="col-span-2 flex justify-end">
-                <input
-                  aria-label="Kaffeebetrag in Euro"
-                  inputMode="decimal"
-                  placeholder="Betrag €"
-                  value={purchaseAmount}
-                  disabled={selectedParticipantId === null || isSubmitting}
-                  onChange={(event) => setPurchaseAmount(event.target.value)}
-                  className={cn(amountInputClassName, "max-w-[8.6rem]")}
-                />
+                <div className="col-span-2 flex justify-end">
+                  <input
+                    aria-label="Kaffeebetrag in Euro"
+                    inputMode="decimal"
+                    placeholder="Betrag €"
+                    value={purchaseAmount}
+                    disabled={selectedParticipantId === null || isSubmitting}
+                    onChange={(event) => setPurchaseAmount(event.target.value)}
+                    className={cn(amountInputClassName, "max-w-[8.6rem]")}
+                  />
+                </div>
               </div>
-            </section>
 
-            <section className="grid grid-cols-2 gap-4">
-              <Button
-                variant="mint"
-                disabled={!canReportCoffeeDrawn || isSubmitting}
-                onClick={handleCoffeeDrawn}
-              >
-                Kaffee gezogen
-              </Button>
-              <Button
-                variant="pink"
-                disabled={!canReportCoffeePurchased || isSubmitting}
-                onClick={handleCoffeePurchased}
-              >
-                Kaffee gekauft
-              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="mint"
+                  disabled={!canReportCoffeeDrawn || isSubmitting}
+                  onClick={handleCoffeeDrawn}
+                >
+                  Kaffee gezogen
+                </Button>
+                <Button
+                  variant="pink"
+                  disabled={!canReportCoffeePurchased || isSubmitting}
+                  onClick={handleCoffeePurchased}
+                >
+                  Kaffee gekauft
+                </Button>
+              </div>
             </section>
 
             <section>
@@ -316,8 +369,23 @@ export default function App() {
               </Button>
             </section>
 
+            {nextToBuyCoffee.isSupplyDepleted ? (
+              <section className="rounded-[1.25rem] border border-red-300/40 bg-red-100/10 px-4 py-3">
+                <div className="flex items-center justify-between gap-4">
+                  <p className="text-xs font-semibold uppercase leading-[1.25] tracking-[0.18em] text-red-200">
+                    Verbrauch seit
+                    <br />
+                    Leer-Meldung
+                  </p>
+                  <p className="text-[2rem] font-black leading-none text-white">
+                    {nextToBuyCoffee.cupsDrawnSinceSupplyDepleted}
+                  </p>
+                </div>
+              </section>
+            ) : null}
+
             <section className="space-y-3">
-              <h2 className="text-[1.55rem] font-bold">Du bist dran:</h2>
+              <h2 className="text-[1.1rem] font-bold">Der Vorrat braucht dich:</h2>
               <div className="space-y-1.5 px-10">
                 {nextToBuyCoffee.ranking.length > 0 ? (
                   nextToBuyCoffee.ranking.map((displayName, index) => (
