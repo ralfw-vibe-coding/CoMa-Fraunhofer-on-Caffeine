@@ -1,4 +1,6 @@
 import "dotenv/config";
+import fs from "node:fs";
+import path from "node:path";
 import cors from "cors";
 import express from "express";
 import { createAppEventStore } from "./event-store/createAppEventStore.ts";
@@ -14,6 +16,9 @@ async function bootstrap() {
   const app = express();
   const port = Number(process.env.PORT ?? 3001);
   const appEventStore = await createAppEventStore();
+  const distDirectory = path.resolve(process.cwd(), "dist");
+  const indexHtmlPath = path.join(distDirectory, "index.html");
+  const hasBuiltFrontend = fs.existsSync(indexHtmlPath);
 
   const registerParticipantCommandProcessor = new RegisterParticipantCommandProcessor(
     appEventStore.eventStore,
@@ -105,6 +110,19 @@ async function bootstrap() {
       next(error);
     }
   });
+
+  if (hasBuiltFrontend) {
+    app.use(express.static(distDirectory));
+
+    app.get("*", (request, response, next) => {
+      if (request.path.startsWith("/api/")) {
+        next();
+        return;
+      }
+
+      response.sendFile(indexHtmlPath);
+    });
+  }
 
   app.use(
     (
