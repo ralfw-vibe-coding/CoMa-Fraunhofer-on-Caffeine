@@ -114,7 +114,7 @@ async function bootstrap() {
   if (hasBuiltFrontend) {
     app.use(express.static(distDirectory));
 
-    app.get("*", (request, response, next) => {
+    app.get("/{*frontendPath}", (request, response, next) => {
       if (request.path.startsWith("/api/")) {
         next();
         return;
