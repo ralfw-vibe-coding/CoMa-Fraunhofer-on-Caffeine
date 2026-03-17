@@ -18,11 +18,11 @@ export async function createAppEventStore(): Promise<AppEventStore> {
   const backend = (process.env.EVENT_STORE_BACKEND ?? "memory") as StoreBackend;
 
   if (backend === "postgres") {
-    const connectionString = process.env.EVENT_STORE_POSTGRES_URL;
+    const connectionString = process.env.DATABASE_URL;
 
     if (!connectionString) {
       throw new Error(
-        "EVENT_STORE_POSTGRES_URL ist erforderlich, wenn EVENT_STORE_BACKEND=postgres gesetzt ist.",
+        "DATABASE_URL ist erforderlich, wenn EVENT_STORE_BACKEND=postgres gesetzt ist.",
       );
     }
 
