@@ -1,14 +1,14 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
-import { createAppEventStore } from "./event-store/createAppEventStore";
-import { DeregisterParticipantCommandProcessor } from "./processors/DeregisterParticipantCommandProcessor";
-import { ListParticipantsQueryProcessor } from "./processors/ListParticipantsQueryProcessor";
-import { ListWhoIsNextToBuyCoffeeQueryProcessor } from "./processors/ListWhoIsNextToBuyCoffeeQueryProcessor";
-import { RecordCoffeeDrawnCommandProcessor } from "./processors/RecordCoffeeDrawnCommandProcessor";
-import { RecordCoffeePurchasedCommandProcessor } from "./processors/RecordCoffeePurchasedCommandProcessor";
-import { RecordCoffeeSupplyDepletedCommandProcessor } from "./processors/RecordCoffeeSupplyDepletedCommandProcessor";
-import { RegisterParticipantCommandProcessor } from "./processors/RegisterParticipantCommandProcessor";
+import { createAppEventStore } from "./event-store/createAppEventStore.ts";
+import { DeregisterParticipantCommandProcessor } from "./processors/DeregisterParticipantCommandProcessor.ts";
+import { ListParticipantsQueryProcessor } from "./processors/ListParticipantsQueryProcessor.ts";
+import { ListWhoIsNextToBuyCoffeeQueryProcessor } from "./processors/ListWhoIsNextToBuyCoffeeQueryProcessor.ts";
+import { RecordCoffeeDrawnCommandProcessor } from "./processors/RecordCoffeeDrawnCommandProcessor.ts";
+import { RecordCoffeePurchasedCommandProcessor } from "./processors/RecordCoffeePurchasedCommandProcessor.ts";
+import { RecordCoffeeSupplyDepletedCommandProcessor } from "./processors/RecordCoffeeSupplyDepletedCommandProcessor.ts";
+import { RegisterParticipantCommandProcessor } from "./processors/RegisterParticipantCommandProcessor.ts";
 
 async function bootstrap() {
   const app = express();

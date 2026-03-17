@@ -1,7 +1,10 @@
 import { type Event, type EventStore } from "@ricofritzsche/eventstore";
 import { randomUUID } from "node:crypto";
-import { eventTypes, isNonEmptyString } from "../domain/events";
-import type { CommandResponse, RegisterParticipantCommand } from "../domain/requests";
+import { eventTypes, isNonEmptyString } from "../domain/events.ts";
+import type {
+  CommandResponse,
+  RegisterParticipantCommand,
+} from "../domain/requests.ts";
 
 export class RegisterParticipantCommandProcessor {
   constructor(private readonly eventStore: EventStore) {}

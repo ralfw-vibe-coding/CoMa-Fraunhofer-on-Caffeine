@@ -1,7 +1,7 @@
 import { type EventRecord, type EventStore } from "@ricofritzsche/eventstore";
-import { createRankingQuery } from "../domain/events";
-import { projectRanking } from "../domain/projections";
-import type { ListWhoIsNextToBuyCoffeeQueryResult } from "../domain/requests";
+import { createRankingQuery } from "../domain/events.ts";
+import { projectRanking } from "../domain/projections.ts";
+import type { ListWhoIsNextToBuyCoffeeQueryResult } from "../domain/requests.ts";
 
 export class ListWhoIsNextToBuyCoffeeQueryProcessor {
   constructor(private readonly eventStore: EventStore) {}

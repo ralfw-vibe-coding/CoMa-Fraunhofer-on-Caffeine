@@ -2,8 +2,8 @@ import { type EventRecord } from "@ricofritzsche/eventstore";
 import type {
   ListParticipantsQueryResult,
   ListWhoIsNextToBuyCoffeeQueryResult,
-} from "./requests";
-import { eventTypes } from "./events";
+} from "./requests.ts";
+import { eventTypes } from "./events.ts";
 
 type ParticipantState = {
   displayName: string;

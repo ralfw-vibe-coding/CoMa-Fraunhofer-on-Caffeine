@@ -1,7 +1,7 @@
 import { type EventRecord, type EventStore } from "@ricofritzsche/eventstore";
-import { createParticipantListQuery } from "../domain/events";
-import { projectParticipants } from "../domain/projections";
-import type { ListParticipantsQueryResult } from "../domain/requests";
+import { createParticipantListQuery } from "../domain/events.ts";
+import { projectParticipants } from "../domain/projections.ts";
+import type { ListParticipantsQueryResult } from "../domain/requests.ts";
 
 export class ListParticipantsQueryProcessor {
   constructor(private readonly eventStore: EventStore) {}

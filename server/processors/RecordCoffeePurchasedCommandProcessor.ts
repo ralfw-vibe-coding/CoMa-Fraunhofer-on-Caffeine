@@ -1,7 +1,14 @@
 import { type Event, type EventRecord, type EventStore } from "@ricofritzsche/eventstore";
 import { randomUUID } from "node:crypto";
-import { createParticipantContextQuery, eventTypes, isNonEmptyString } from "../domain/events";
-import type { CommandResponse, RecordCoffeePurchasedCommand } from "../domain/requests";
+import {
+  createParticipantContextQuery,
+  eventTypes,
+  isNonEmptyString,
+} from "../domain/events.ts";
+import type {
+  CommandResponse,
+  RecordCoffeePurchasedCommand,
+} from "../domain/requests.ts";
 
 type ParticipantContextModel = {
   exists: boolean;

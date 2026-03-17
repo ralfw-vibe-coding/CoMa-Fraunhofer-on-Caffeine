@@ -1,10 +1,10 @@
 import { type Event, type EventStore } from "@ricofritzsche/eventstore";
 import { randomUUID } from "node:crypto";
-import { eventTypes } from "../domain/events";
+import { eventTypes } from "../domain/events.ts";
 import type {
   CommandResponse,
   RecordCoffeeSupplyDepletedCommand,
-} from "../domain/requests";
+} from "../domain/requests.ts";
 
 export class RecordCoffeeSupplyDepletedCommandProcessor {
   constructor(private readonly eventStore: EventStore) {}
