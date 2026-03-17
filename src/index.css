@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #fff8f0;
+  background: #120b08;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-width: 320px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10vh;
+  width: 0.7rem;
+  height: 1.6rem;
+  border-radius: 0.35rem;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) rotate(0deg) scale(0.9);
+  animation: confetti-fall 1900ms ease-in forwards;
+}
+
+.confetti-piece:nth-child(6n + 1) {
+  background: #fff0a8;
+}
+
+.confetti-piece:nth-child(6n + 2) {
+  background: #ff5fd0;
+}
+
+.confetti-piece:nth-child(6n + 3) {
+  background: #38d3b0;
+}
+
+.confetti-piece:nth-child(6n + 4) {
+  background: #8b7cff;
+}
+
+.confetti-piece:nth-child(6n + 5) {
+  background: #ff9a3d;
+}
+
+.confetti-piece:nth-child(6n) {
+  background: #ffffff;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(0.7);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  35% {
+    opacity: 1;
+    transform: translate3d(1rem, 35vh, 0) rotate(240deg) scale(1);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translate3d(-1rem, 72vh, 0) rotate(410deg) scale(0.95);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(1.4rem, 112vh, 0) rotate(560deg) scale(0.9);
+  }
+}
