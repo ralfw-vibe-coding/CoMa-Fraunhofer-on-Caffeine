@@ -14,6 +14,12 @@ type RankingResult = {
   urgency: "low" | "medium" | "high";
   isSupplyDepleted: boolean;
   cupsDrawnSinceSupplyDepleted: number;
+  consumptionByParticipant: Array<{
+    participantRegisteredId: string;
+    displayName: string;
+    cupsConsumed: number;
+  }>;
+  totalCupsConsumed: number;
 };
 
 type CommandResponse = {
@@ -40,6 +46,8 @@ export default function App() {
     urgency: "low",
     isSupplyDepleted: false,
     cupsDrawnSinceSupplyDepleted: 0,
+    consumptionByParticipant: [],
+    totalCupsConsumed: 0,
   });
   const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const [purchaseAmount, setPurchaseAmount] = useState("");
@@ -55,6 +63,11 @@ export default function App() {
     selectedParticipantId !== null &&
     Number.isFinite(Number.parseFloat(purchaseAmount)) &&
     Number.parseFloat(purchaseAmount) > 0;
+  const canReportSupplyDepleted = !nextToBuyCoffee.isSupplyDepleted;
+  const maxConsumedCups = nextToBuyCoffee.consumptionByParticipant.reduce(
+    (max, participant) => Math.max(max, participant.cupsConsumed),
+    0,
+  );
 
   useEffect(() => {
     if (!showConfetti) {
@@ -362,7 +375,7 @@ export default function App() {
               <Button
                 variant="danger"
                 size="banner"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !canReportSupplyDepleted}
                 onClick={handleCoffeeSupplyDepleted}
               >
                 Vorrat leer!
@@ -410,6 +423,58 @@ export default function App() {
                 )}
               </div>
             </section>
+
+            {nextToBuyCoffee.consumptionByParticipant.length > 0 ? (
+              <section className="space-y-3">
+                <h2 className="text-[1.05rem] font-bold">Verbrauchsstatistik</h2>
+                <div className="space-y-3">
+                  {nextToBuyCoffee.consumptionByParticipant.map((participant) => {
+                    const barWidth =
+                      maxConsumedCups === 0
+                        ? 0
+                        : Math.max(
+                            12,
+                            Math.round((participant.cupsConsumed / maxConsumedCups) * 100),
+                          );
+
+                    return (
+                      <div key={participant.participantRegisteredId} className="space-y-1.5">
+                        <div className="flex items-center justify-between gap-3 text-sm">
+                          <span className="font-medium text-[#f7e7db]">
+                            {participant.displayName}
+                          </span>
+                          <span className="text-[#d5beb2]">
+                            {participant.cupsConsumed}{" "}
+                            {participant.cupsConsumed === 1 ? "Tasse" : "Tassen"}
+                          </span>
+                        </div>
+                        <div className="h-8 rounded-full border border-white/10 bg-[#1b110d] p-1">
+                          <div
+                            className={cn(
+                              "flex h-full items-center rounded-full px-3 text-xs font-semibold text-[#2f180d] transition-[width]",
+                              participant.cupsConsumed > 0
+                                ? "bg-gradient-to-r from-[#ffd289] via-[#ffb45e] to-[#ff8a5b]"
+                                : "bg-[#2c1c17] text-[#9d8376]",
+                            )}
+                            style={{
+                              width:
+                                participant.cupsConsumed > 0 ? `${barWidth}%` : "100%",
+                            }}
+                          >
+                            {participant.cupsConsumed}{" "}
+                            {participant.cupsConsumed === 1 ? "Tasse" : "Tassen"}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-right text-sm text-[#d5beb2]">
+                  Gesamt: {nextToBuyCoffee.totalCupsConsumed}{" "}
+                  {nextToBuyCoffee.totalCupsConsumed === 1 ? "Tasse" : "Tassen"}
+                </p>
+              </section>
+            ) : null}
           </section>
         </Card>
       </div>

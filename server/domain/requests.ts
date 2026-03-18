@@ -39,4 +39,10 @@ export type ListWhoIsNextToBuyCoffeeQueryResult = {
   urgency: RankingUrgency;
   isSupplyDepleted: boolean;
   cupsDrawnSinceSupplyDepleted: number;
+  consumptionByParticipant: Array<{
+    participantRegisteredId: string;
+    displayName: string;
+    cupsConsumed: number;
+  }>;
+  totalCupsConsumed: number;
 };

@@ -9,6 +9,7 @@ type ParticipantState = {
   displayName: string;
   active: boolean;
   registeredSequenceNumber: number;
+  cupsConsumed: number;
 };
 
 function readString(payload: Record<string, unknown>, key: string): string | null {
@@ -49,6 +50,7 @@ function buildParticipantState(events: EventRecord[]) {
           displayName,
           active: true,
           registeredSequenceNumber: event.sequenceNumber,
+          cupsConsumed: 0,
         });
         break;
       }
@@ -78,6 +80,15 @@ function buildParticipantState(events: EventRecord[]) {
       }
 
       case eventTypes.coffeeDrawn: {
+        const participantRegisteredId = readScopedParticipantId(event.payload);
+        const participant = participantRegisteredId
+          ? participants.get(participantRegisteredId)
+          : undefined;
+
+        if (participant) {
+          participant.cupsConsumed += 1;
+        }
+
         if (lastSupplyDepletedSequenceNumber > lastCoffeePurchasedSequenceNumber) {
           cupsDrawnSinceSupplyDepleted += 1;
         }
@@ -142,6 +153,28 @@ export function projectRanking(
   const activeParticipantNames = Array.from(participants.values())
     .filter((participant) => participant.active)
     .map((participant) => participant.displayName);
+  const consumptionByParticipant = Array.from(participants.entries())
+    .filter(([, participant]) => participant.active)
+    .sort((left, right) => {
+      if (left[1].cupsConsumed === right[1].cupsConsumed) {
+        if (left[1].displayName === right[1].displayName) {
+          return left[1].registeredSequenceNumber - right[1].registeredSequenceNumber;
+        }
+
+        return left[1].displayName.localeCompare(right[1].displayName, "de");
+      }
+
+      return right[1].cupsConsumed - left[1].cupsConsumed;
+    })
+    .map(([participantRegisteredId, participant]) => ({
+      participantRegisteredId,
+      displayName: participant.displayName,
+      cupsConsumed: participant.cupsConsumed,
+    }));
+  const totalCupsConsumed = consumptionByParticipant.reduce(
+    (total, participant) => total + participant.cupsConsumed,
+    0,
+  );
 
   const ranking = shuffle(activeParticipantNames).slice(0, 3);
 
@@ -151,6 +184,8 @@ export function projectRanking(
       urgency: "low",
       isSupplyDepleted: false,
       cupsDrawnSinceSupplyDepleted: 0,
+      consumptionByParticipant,
+      totalCupsConsumed,
     };
   }
 
@@ -160,6 +195,8 @@ export function projectRanking(
       urgency: "high",
       isSupplyDepleted: true,
       cupsDrawnSinceSupplyDepleted,
+      consumptionByParticipant,
+      totalCupsConsumed,
     };
   }
 
@@ -168,5 +205,7 @@ export function projectRanking(
     urgency: "low",
     isSupplyDepleted: false,
     cupsDrawnSinceSupplyDepleted: 0,
+    consumptionByParticipant,
+    totalCupsConsumed,
   };
 }
